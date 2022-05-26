@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "user/delivery/grpc/protos";
+
+package protos;
+
+service UserData {
+    rpc GetUsers(Empty) returns (stream User);
+    rpc GetUser(Id) returns (User);
+    rpc CreateUser(User) returns (User);
+    rpc UpdateUser(User) returns (Status);
+    rpc DeleteUser(Id) returns (Status);
+}
+
+message Empty {}
+
+message User {
+    int64 id = 1;
+    string name = 2;
+    string email = 3;
+    int64 age = 4;
+}
+
+message Id {
+    int64 value = 1;
+}
+
+message Status {
+    int32 value = 1;
+}
