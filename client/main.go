@@ -21,11 +21,11 @@ func main() {
 
 	client := pb.NewUserDataClient(conn)
 
-	// runGetUsers(client)
+	runGetUsers(client)
 	// runGetUser(client, 2)
 	// runCreateUser(client, "Momo", "momo@gmail.com", 12)
 	// runUpdateUser(client, 10, "Momos", "momo@gmail.com", 12)
-	runDeleteUser(client, 10)
+	// runDeleteUser(client, 10)
 }
 
 func runGetUsers(client pb.UserDataClient) {
