@@ -35,8 +35,8 @@ func main() {
 	defer conn.Close()
 	c := pb.NewUserHandlerClient(conn)
 	// getUsers(c)
-	getUserById(c)
-	// creteUser(c)
+	// getUserById(c)
+	creteUser(c)
 	// updateUser(c)
 	// deleteUser(c)
 }

@@ -1,10 +1,12 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
 	models "simple-grpc-go/user"
+	"time"
 )
 
 type mysqlUserRepository struct {
@@ -16,12 +18,16 @@ func NewMysqlUserRepository(Conn *sql.DB) UserRepository {
 }
 
 func (m *mysqlUserRepository) fetch(query string, args ...interface{}) ([]*models.User, error) {
-	rows, err := m.Conn.Query(query, args...)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+
 	if err != nil {
 		log.Fatal(err)
 		return nil, models.INTERNAL_SERVER_ERROR
 	}
 	defer rows.Close()
+
 	result := make([]*models.User, 0)
 	for rows.Next() {
 		t := new(models.User)
@@ -72,8 +78,11 @@ func (m *mysqlUserRepository) GetByID(id int64) (*models.User, error) {
 }
 
 func (m *mysqlUserRepository) Store(u *models.User) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	query := `INSERT users SET name=?, email=?, age=?, created_at=?, updated_at=?`
-	stmt, err := m.Conn.Prepare(query)
+	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		log.Fatal(err)
 		return 0, models.INTERNAL_SERVER_ERROR
@@ -87,9 +96,11 @@ func (m *mysqlUserRepository) Store(u *models.User) (int64, error) {
 }
 
 func (m *mysqlUserRepository) Update(ur *models.User) (*models.User, error) {
-	query := `UPDATE users SET name=?, email=?, age=?, updated_at=? WHERE ID = ?`
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	stmt, err := m.Conn.Prepare(query)
+	query := `UPDATE users SET name=?, email=?, age=?, updated_at=? WHERE ID = ?`
+	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -112,9 +123,11 @@ func (m *mysqlUserRepository) Update(ur *models.User) (*models.User, error) {
 }
 
 func (m *mysqlUserRepository) Delete(id int64) (bool, error) {
-	query := "DELETE FROM users WHERE id = ?"
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	stmt, err := m.Conn.Prepare(query)
+	query := "DELETE FROM users WHERE id = ?"
+	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		log.Fatal(err)
 		return false, models.INTERNAL_SERVER_ERROR

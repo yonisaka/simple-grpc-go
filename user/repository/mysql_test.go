@@ -27,9 +27,9 @@ func TestFetch(t *testing.T) {
 	defer db.Close()
 
 	rows := sqlmock.NewRows([]string{"id","name","email","age","created_at","updated_at"}).
-		AddRow(1, "test 1", "test1@mail.com", 22,time.Now(), time.Now()).
-		AddRow(2, "test 2", "test2@mail.com", 11,time.Now(), time.Now()).
-		AddRow(3, "test 3", "test3@mail.com", 33,time.Now(), time.Now())
+		AddRow(1, "test 1", "test1@mail.com", 22, time.Now(), time.Now()).
+		AddRow(2, "test 2", "test2@mail.com", 11, time.Now(), time.Now()).
+		AddRow(3, "test 3", "test3@mail.com", 33, time.Now(), time.Now())
 
 	query := "SELECT id,name,email,age,created_at,updated_at FROM users WHERE ID > \\? LIMIT \\?"
 
@@ -65,6 +65,7 @@ func TestCreateUser(t *testing.T) {
 	defer db.Close()
 
 	user := &models.User{
+		ID: 1,
 		Name: "lacrose",
 		Email: "lacrose@gmail.com",
 		Age: 22,
@@ -72,19 +73,18 @@ func TestCreateUser(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 
-	query := "INSERT users SET name = \\?, email = \\?, age = \\?, created_at = \\?, updated_at = \\?"
+	query := "INSERT users SET id = \\?, name = \\?, email = \\?, age = \\?, created_at = \\?, updated_at = \\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectExec().
-		WithArgs(user.Name, user.Email, user.Age, user.CreatedAt, user.UpdatedAt).
+		WithArgs(user.ID, user.Name, user.Email, user.Age, user.CreatedAt, user.UpdatedAt).
 		WillReturnResult(sqlmock.NewResult(0, 1))
-	// mock.ExpectExec(query).WithArgs(user.Name, user.Email, user.Age, user.CreatedAt, user.UpdatedAt).
 
 	u := userRepo.NewMysqlUserRepository(db)
 
 	lastId, err := u.Store(user)
 	assert.NoError(t, err)
-	assert.Equal(t, int64(14), lastId)
+	assert.Equal(t, int64(15), lastId)
 }
 
 func TestUpdateUser(t *testing.T) {
@@ -92,7 +92,7 @@ func TestUpdateUser(t *testing.T) {
 	defer db.Close()
 
 	user := &models.User{
-		ID: 13,
+		ID: 14,
 		Name: "lacrose",
 		Email: "lacrose@gmail.com",
 		Age: 22,
