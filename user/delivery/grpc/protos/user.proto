@@ -1,30 +1,35 @@
 syntax = "proto3";
-
-option go_package = "user/delivery/grpc/protos";
-
 package protos;
+option go_package = "user/delivery/grpc/protos";
+import "google/protobuf/timestamp.proto";
 
-service UserData {
-    rpc GetUsers(Empty) returns (stream User);
-    rpc GetUser(Id) returns (User);
+service UserHandler {
+    rpc GetUsers(FetchRequest) returns (stream User);
+    rpc GetUser(SingleRequest) returns (User);
     rpc CreateUser(User) returns (User);
-    rpc UpdateUser(User) returns (Status);
-    rpc DeleteUser(Id) returns (Status);
+    rpc UpdateUser(User) returns (User);
+    rpc DeleteUser(SingleRequest) returns (DeleteResponse);
 }
-
-message Empty {}
 
 message User {
     int64 id = 1;
     string name = 2;
     string email = 3;
     int64 age = 4;
+	google.protobuf.Timestamp CreatedAt = 5;
+    google.protobuf.Timestamp UpdatedAt = 6;
 }
 
-message Id {
-    int64 value = 1;
+message FetchRequest{
+    int64 num=1;
+    string cursor =2;
 }
 
-message Status {
-    int32 value = 1;
+message SingleRequest{
+    int64 id = 1;
+}
+
+message DeleteResponse{
+    string status = 1;
+    int32 code = 2;
 }

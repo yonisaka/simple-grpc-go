@@ -2,104 +2,113 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"log"
-	"time"
-
-	"google.golang.org/grpc"
 
 	pb "simple-grpc-go/user/delivery/grpc/protos"
+
+	"github.com/spf13/viper"
+	"google.golang.org/grpc"
 )
 
-const address = "localhost:50051"
-
-func main() {
-	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
+func init() {
+	viper.SetConfigFile(`config.json`)
+	err := viper.ReadInConfig()
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		panic(err)
 	}
 
-	client := pb.NewUserDataClient(conn)
-
-	runGetUsers(client)
-	// runGetUser(client, 2)
-	// runCreateUser(client, "Momo", "momo@gmail.com", 12)
-	// runUpdateUser(client, 10, "Momos", "momo@gmail.com", 12)
-	// runDeleteUser(client, 10)
+	if viper.GetBool(`debug`) {
+		log.Println("Service RUN on DEBUG mode")
+	}
 }
 
-func runGetUsers(client pb.UserDataClient) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	req := &pb.Empty{}
-	stream, err := client.GetUsers(ctx, req)
+func main() {
+	address := viper.GetString(`server.address`)
+	conn, err := grpc.Dial("localhost"+address, grpc.WithInsecure())
+
 	if err != nil {
-		log.Fatalf("%v.GetUsers(_) = _, %v", client, err)
+		fmt.Println("Unexpected Error", err)
 	}
+
+	defer conn.Close()
+	c := pb.NewUserHandlerClient(conn)
+	// getUsers(c)
+	getUserById(c)
+	// creteUser(c)
+	// updateUser(c)
+	// deleteUser(c)
+}
+
+func getUsers(c pb.UserHandlerClient) {
+	f := &pb.FetchRequest{
+		Num: 0,
+		Cursor: "",
+	}
+	stream, err := c.GetUsers(context.Background(), f)
+	if err != nil {
+		fmt.Println("Unexpected Error", err)
+	}
+
 	for {
-		row, err := stream.Recv()
+		r, err := stream.Recv()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatalf("%v.GetUsers(_) = _, %v", client, err)
+			fmt.Println("Unexpected Error", err)
+			break
 		}
-		log.Printf("Users: %v", row)
+		fmt.Println("Data From Stream :  ", r.Name, r.Email)
 	}
 }
 
-func runGetUser(client pb.UserDataClient, userid int64) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	req := &pb.Id{Value: userid}
-	res, err := client.GetUser(ctx, req)
-	if err != nil {
-		log.Fatalf("%v.GetUser(_) = _, %v", client, err)
+func getUserById(c pb.UserHandlerClient) {
+	req := &pb.SingleRequest{
+		Id: 2,
 	}
-	log.Printf("UserInfo: %v", res)
+	r, err := c.GetUser(context.Background(), req)
+	if err != nil {
+		fmt.Println("Unexpected Error", err)
+	}
+	fmt.Println("Data From Single Request : ", r.Name, r.Email)
 }
 
-func runCreateUser(client pb.UserDataClient, name string, email string, age int64) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	req := &pb.User{Name: name, Email: email, Age: age}
-	res, err := client.CreateUser(ctx, req)
+func creteUser(c pb.UserHandlerClient) {
+	req := &pb.User{
+		Name: "John",
+		Email: "john@gmail.com",
+		Age: 23,
+	}
+	r, err := c.CreateUser(context.Background(), req)
 	if err != nil {
-		log.Fatalf("%v.CreateUser(_) = _, %v", client, err)
+		fmt.Println("Unexpected Error", err)
 	}
-	if res != nil{
-		log.Printf("CreateUser: %v", res)
-	} else {
-		log.Printf("CreateUser Failed")
-	}
+	fmt.Println("User Created : ", r.Name)
 }
 
-func runUpdateUser(client pb.UserDataClient, userid int64, name string, email string, age int64) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	req := &pb.User{Id: userid, Name: name, Email: email, Age: age}
-	res, err := client.UpdateUser(ctx, req)
+func updateUser(c pb.UserHandlerClient) {
+	req := &pb.User{
+		Id : 11,
+		Name: "Johns",
+		Email: "john@gmail.com",
+		Age: 23,
+	}
+	r, err := c.UpdateUser(context.Background(), req)
 	if err != nil {
-		log.Fatalf("%v.UpdateUser(_) = _, %v", client, err)
+		fmt.Println("Unexpected Error", err)
 	}
-	if int(res.GetValue()) == 1 {
-		log.Printf("UpdateUser Success")
-	} else {
-		log.Printf("UpdateUser Failed")
-	}
+	fmt.Println("User Updated : ", r.Name)
 }
 
-func runDeleteUser(client pb.UserDataClient, userid int64) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	req := &pb.Id{Value: userid}
-	res, err := client.DeleteUser(ctx, req)
+func deleteUser(c pb.UserHandlerClient) {
+	req := &pb.SingleRequest{
+		Id: 11,
+	}
+	r, err := c.DeleteUser(context.Background(), req)
 	if err != nil {
-		log.Fatalf("%v.DeleteUser(_) = _, %v", client, err)
+		fmt.Println("Unexpected Error", err)
 	}
-	if int(res.GetValue()) == 1 {
-		log.Printf("DeleteUser Success")
-	} else {
-		log.Printf("DeleteUser Failed")
-	}
+	fmt.Println("User Deleted : ", r.Status)
 }

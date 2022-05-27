@@ -1,22 +1,22 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"log"
 	"net"
-
-	server "simple-grpc-go/config"
-	_userGrpcDelivery "simple-grpc-go/user/delivery/grpc"
+	"net/url"
 
 	pb "simple-grpc-go/user/delivery/grpc/protos"
-	// _userRepo "simple-grpc-go/user/repository"
-	// _userUcase "simple-grpc-go/user/usecase"
+
+	userDeliveryGrpc "simple-grpc-go/user/delivery/grpc"
+	userRepo "simple-grpc-go/user/repository"
+	userUcase "simple-grpc-go/user/usecase"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 )
-
-const port = ":50051"
 
 var users []*pb.User
 
@@ -33,23 +33,37 @@ func init() {
 }
 
 func main() {
-	server.InitializeConnDB()
+	dbDriver := viper.GetString(`database.driver`)
+	dbHost := viper.GetString(`database.host`)
+	dbPort := viper.GetString(`database.port`)
+	dbUser := viper.GetString(`database.user`)
+	dbPass := viper.GetString(`database.pass`)
+	dbName := viper.GetString(`database.name`)
 
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+	connection := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
+	val := url.Values{}
+	val.Add("parseTime", "1")
+	val.Add("loc", "Asia/Jakarta")
+	dsn := fmt.Sprintf("%s?%s", connection, val.Encode())
+	dbConn, err := sql.Open(dbDriver, dsn)
+	if err != nil && viper.GetBool("debug") {
+		fmt.Println(err)
 	}
-	s := grpc.NewServer()
+	defer dbConn.Close()
+	
+	ur := userRepo.NewMysqlUserRepository(dbConn)
+	uc := userUcase.NewUserUsecase(ur)
+	list, err := net.Listen("tcp", viper.GetString("server.address"))
+	if err != nil {
+		fmt.Println("SOMETHING HAPPEN")
+	}
 
-	// ur := _userRepo.NewUserRepository(server.DB)
-	// timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
-	// uc := _userUcase.NewUserUsecase(ur, timeoutContext)
-	// _userGrpcDelivery.NewUserHandler(uc)
+	server := grpc.NewServer()
+	userDeliveryGrpc.NewUserServerGrpc(server, uc)
+	fmt.Println("Server Run at ", viper.GetString("server.address"))
 
-	pb.RegisterUserDataServer(s, &_userGrpcDelivery.UserDataServer{})
-
-	log.Printf("server listening at %v", lis.Addr())
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	err = server.Serve(list)
+	if err != nil {
+		fmt.Println("Unexpected Error", err)
 	}
 }
