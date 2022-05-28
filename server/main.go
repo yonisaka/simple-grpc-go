@@ -53,7 +53,7 @@ func main() {
 	
 	ur := userRepo.NewMysqlUserRepository(dbConn)
 	uc := userUcase.NewUserUsecase(ur)
-	list, err := net.Listen("tcp", viper.GetString("server.address"))
+	list, err := net.Listen("tcp", "localhost"+viper.GetString("server.address"))
 	if err != nil {
 		fmt.Println("SOMETHING HAPPEN")
 	}
