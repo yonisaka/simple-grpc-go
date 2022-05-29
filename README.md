@@ -29,9 +29,6 @@ Change the **config.json** to run on local
     "server": {
         "address": ":8081"
     },
-    "context":{
-        "timeout":2
-    },
     "database": {
         "driver": "mysql",
         "host": "localhost",
