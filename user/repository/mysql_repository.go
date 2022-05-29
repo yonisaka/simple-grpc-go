@@ -205,7 +205,7 @@ func (m *mysqlUserRepository) Update(ur *models.User) (*models.User, error) {
 		return nil, err
 	}
 	if affect < 1 {
-		return nil, errors.New("Nothing Affected. Make sure your article is exist in DB")
+		return nil, errors.New("Nothing Affected. Make sure your user is exist in DB")
 	}
 
 	return ur, nil
