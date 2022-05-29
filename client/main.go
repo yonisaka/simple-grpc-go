@@ -26,7 +26,7 @@ func init() {
 
 func main() {
 	address := viper.GetString(`server.address`)
-	conn, err := grpc.Dial("localhost"+address, grpc.WithInsecure())
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
 
 	if err != nil {
 		fmt.Println("Unexpected Error", err)
@@ -104,7 +104,7 @@ func updateUser(c pb.UserHandlerClient) {
 
 func deleteUser(c pb.UserHandlerClient) {
 	req := &pb.SingleRequest{
-		Id: 11,
+		Id: 14,
 	}
 	r, err := c.DeleteUser(context.Background(), req)
 	if err != nil {

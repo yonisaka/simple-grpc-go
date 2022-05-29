@@ -1,0 +1,29 @@
+version: "3"
+services:
+  app:
+      build: .
+      container_name: simple-grpc-go 
+      ports:
+        - 8081:8081
+      depends_on:
+        - mysql
+        - redis
+      networks:
+        - fullstack
+  mysql:
+      container_name: mysql
+      image: mysql:5.7.33
+      environment:
+        - MYSQL_ROOT_PASSWORD=password
+      ports:
+        - 3307:3306
+  redis:
+      container_name: redis
+      image: redis:latest
+      command: ["redis-server", "--bind", "redis", "--port", "6379"]
+      ports:
+        - 6379:6379
+
+networks:
+  fullstack:
+    driver: bridge
