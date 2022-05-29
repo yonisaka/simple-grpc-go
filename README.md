@@ -6,5 +6,14 @@ Simple API is currently extended with the following requirements. Instructions o
 
 | Requirement | Version |
 | ----------- | ----------- |
-| Go | >= 1.17.2 |
-| Paragraph | Text |
+| Go | = 1.17.2 |
+| Mysql | = 5.7.33 |
+| Redis | >= 3.2.10 |
+
+## Installation
+Make sure you the requirements above already install on your system. Or you could easily run with Docker to make your environment clean.
+
+Clone the project to your directory and install the dependencies.
+
+`$ git clone https://github.com/yonisaka/simple-grpc-go`
+
