@@ -36,6 +36,10 @@ Change the **config.json** to run on local
         "user": "root",
         "pass": "",
         "name": "simple_grpc_go"
+    },
+    "redis": {
+        "host": "localhost",
+        "port": ":6379"
     }
 }
 ```
