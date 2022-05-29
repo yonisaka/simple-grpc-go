@@ -43,4 +43,26 @@ Change the **config.json** to run on local
 }
 ```
 
+## Database
+Import simple_grpc_go.sql on your mysql.
 
+## Run Application
+Run Server Application :
+```
+$ go run server/main.go
+```
+
+Run Cleint Application :
+```
+$ go run client/main.go
+```
+
+## Docker
+Simple API is very easy to install and deploy in a Docker container. Simply use the docker-compose build to build the image.
+```
+$ docker-compose build
+```
+Once done, run the Docker image by using docker-compose up command.
+```
+$ docker-compose up -d
+```
