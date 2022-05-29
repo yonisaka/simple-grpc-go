@@ -15,15 +15,15 @@ Make sure you the requirements above already install on your system. Or you coul
 
 Clone the project to your directory and install the dependencies.
 
-`
+```
 $ git clone https://github.com/yonisaka/simple-grpc-go
 $ cd simple-grpc-go
 $ go mod tidy
-`
+```
 
 ## Configuration
 Change the **config.json** to run on local
-`
+```
 {
     "debug": true,
     "server": {
@@ -41,6 +41,6 @@ Change the **config.json** to run on local
         "name": "simple_grpc_go"
     }
 }
-`
+```
 
 
