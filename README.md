@@ -15,5 +15,32 @@ Make sure you the requirements above already install on your system. Or you coul
 
 Clone the project to your directory and install the dependencies.
 
-`$ git clone https://github.com/yonisaka/simple-grpc-go`
+`
+$ git clone https://github.com/yonisaka/simple-grpc-go
+$ cd simple-grpc-go
+$ go mod tidy
+`
+
+## Configuration
+Change the **config.json** to run on local
+`
+{
+    "debug": true,
+    "server": {
+        "address": ":8081"
+    },
+    "context":{
+        "timeout":2
+    },
+    "database": {
+        "driver": "mysql",
+        "host": "localhost",
+        "port": "3306",
+        "user": "root",
+        "pass": "",
+        "name": "simple_grpc_go"
+    }
+}
+`
+
 
