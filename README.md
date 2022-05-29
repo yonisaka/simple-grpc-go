@@ -1,4 +1,4 @@
-# simple-grpc-golang
+# simple-grpc-golang 🔥
 Simple gRPC using Golang as Programming Language, Mysql as Database, Redis as Cache
 
 ## Requirements
