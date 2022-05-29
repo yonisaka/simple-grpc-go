@@ -44,7 +44,7 @@ Change the **config.json** to run on local
 ```
 
 ## Database
-Import simple_grpc_go.sql on your mysql.
+Import **simple_grpc_go.sql** to your mysql.
 
 ## Run Application
 Run Server Application :
