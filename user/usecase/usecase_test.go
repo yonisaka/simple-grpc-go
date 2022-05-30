@@ -19,9 +19,9 @@ func TestFetch(t *testing.T) {
 	err := faker.FakeData(&mockUser)
 	assert.NoError(t, err)
 
-	mockListArtilce := make([]*models.User, 0)
-	mockListArtilce = append(mockListArtilce, &mockUser)
-	mockUserRepo.On("Fetch", mock.AnythingOfType("string"), mock.AnythingOfType("int64")).Return(mockListArtilce, nil)
+	mockListUser := make([]*models.User, 0)
+	mockListUser = append(mockListUser, &mockUser)
+	mockUserRepo.On("Fetch", mock.AnythingOfType("string"), mock.AnythingOfType("int64")).Return(mockListUser, nil)
 	u := ucase.NewUserUsecase(mockUserRepo)
 	num := int64(1)
 	cursor := "0"
@@ -30,7 +30,7 @@ func TestFetch(t *testing.T) {
 	assert.Equal(t, cursorExpected, nextCursor)
 	assert.NotEmpty(t, nextCursor)
 	assert.NoError(t, err)
-	assert.Len(t, list, len(mockListArtilce))
+	assert.Len(t, list, len(mockListUser))
 
 	mockUserRepo.AssertCalled(t, "Fetch", mock.AnythingOfType("string"), mock.AnythingOfType("int64"))
 }

@@ -23,7 +23,7 @@ func NewMysqlUserRepository(Conn *sql.DB) UserRepository {
 var expiredCache = 1 * time.Second
 
 func (m *mysqlUserRepository) Fetch(cursor string, num int64) ([]*models.User, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	result := make([]*models.User, 0)
@@ -54,8 +54,7 @@ func (m *mysqlUserRepository) Fetch(cursor string, num int64) ([]*models.User, e
 
 	rows, err := m.Conn.QueryContext(ctx, query, cursor, num)
 	if err != nil {
-		log.Fatal(err)
-		return nil, models.INTERNAL_SERVER_ERROR
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -71,19 +70,18 @@ func (m *mysqlUserRepository) Fetch(cursor string, num int64) ([]*models.User, e
 		)
 
 		if err != nil {
-			log.Fatal(err)
-			return nil, models.INTERNAL_SERVER_ERROR
+			return nil, err
 		}
 		result = append(result, t)
 	}
 
 	data, err := json.Marshal(result)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	set := config.RedisClient.Set(ctx, key, string(data), expiredCache).Err()
 	if set != nil {
-		log.Fatal(set)
+		return nil, set
 	}
 
 	return result, nil

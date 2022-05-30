@@ -65,7 +65,6 @@ func TestCreateUser(t *testing.T) {
 	defer db.Close()
 
 	user := &models.User{
-		ID: 1,
 		Name: "lacrose",
 		Email: "lacrose@gmail.com",
 		Age: 22,
@@ -73,12 +72,12 @@ func TestCreateUser(t *testing.T) {
 		UpdatedAt: time.Now(),
 	}
 
-	query := "INSERT users SET id = \\?, name = \\?, email = \\?, age = \\?, created_at = \\?, updated_at = \\?"
+	query := "INSERT users SET name=\\?, email=\\?, age=\\?, created_at=\\?, updated_at=\\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectExec().
-		WithArgs(user.ID, user.Name, user.Email, user.Age, user.CreatedAt, user.UpdatedAt).
-		WillReturnResult(sqlmock.NewResult(0, 1))
+		WithArgs(user.Name, user.Email, user.Age, user.CreatedAt, user.UpdatedAt).
+		WillReturnResult(sqlmock.NewResult(15, 1))
 
 	u := userRepo.NewMysqlUserRepository(db)
 
@@ -96,16 +95,15 @@ func TestUpdateUser(t *testing.T) {
 		Name: "lacrose",
 		Email: "lacrose@gmail.com",
 		Age: 22,
-		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
 
-	query := "UPDATE users SET name = \\?, email = \\?, age = \\?, created_at = \\?, updated_at = \\? WHERE id = \\?"
+	query := "UPDATE users SET name=\\?, email=\\?, age=\\?, updated_at=\\? WHERE ID = \\?"
 
 	prep := mock.ExpectPrepare(query)
 	prep.ExpectExec().
-		WithArgs(user.Name, user.Email, user.Age, user.CreatedAt, user.UpdatedAt, user.ID).
-		WillReturnResult(sqlmock.NewResult(12, 1))
+		WithArgs(user.Name, user.Email, user.Age, user.UpdatedAt, user.ID).
+		WillReturnResult(sqlmock.NewResult(14, 1))
 
 	u := userRepo.NewMysqlUserRepository(db)
 
