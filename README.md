@@ -1,4 +1,4 @@
-# simple-grpc-golang
+# simple-grpc-golang 🔥
 Simple gRPC using Golang as Programming Language, Mysql as Database, Redis as Cache
 
 ## Requirements
@@ -29,9 +29,6 @@ Change the **config.json** to run on local
     "server": {
         "address": ":8081"
     },
-    "context":{
-        "timeout":2
-    },
     "database": {
         "driver": "mysql",
         "host": "localhost",
@@ -39,6 +36,10 @@ Change the **config.json** to run on local
         "user": "root",
         "pass": "",
         "name": "simple_grpc_go"
+    },
+    "redis": {
+        "host": "localhost",
+        "port": ":6379"
     }
 }
 ```
