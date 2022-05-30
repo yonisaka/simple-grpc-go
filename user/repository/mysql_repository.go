@@ -7,10 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"simple-grpc-go/config"
 	models "simple-grpc-go/user"
 	"time"
-
-	"github.com/go-redis/redis/v8"
 )
 
 type mysqlUserRepository struct {
@@ -21,21 +20,16 @@ func NewMysqlUserRepository(Conn *sql.DB) UserRepository {
 	return &mysqlUserRepository{Conn}
 }
 
-var cache = redis.NewClient(&redis.Options{
-    Addr: "redis:6379",
-    // Addr: "localhost:6379",
-})
-
 var expiredCache = 1 * time.Second
 
 func (m *mysqlUserRepository) Fetch(cursor string, num int64) ([]*models.User, error) {
-	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	// defer cancel()
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
 	result := make([]*models.User, 0)
 	
 	key := "users_"+fmt.Sprintf("%d", num)+cursor
-	get := cache.Get(ctx, key)
+	get := config.RedisClient.Get(ctx, key)
 	err := get.Err()
 	if err != nil {
 		fmt.Println(err)
@@ -87,7 +81,7 @@ func (m *mysqlUserRepository) Fetch(cursor string, num int64) ([]*models.User, e
 	if err != nil {
 		log.Fatal(err)
 	}
-	set := cache.Set(ctx, key, string(data), expiredCache).Err()
+	set := config.RedisClient.Set(ctx, key, string(data), expiredCache).Err()
 	if set != nil {
 		log.Fatal(set)
 	}
@@ -102,7 +96,7 @@ func (m *mysqlUserRepository) GetByID(id int64) (*models.User, error) {
 	u := &models.User{}
 
 	key := "user_"+fmt.Sprintf("%d", id)
-	get := cache.Get(ctx, key)
+	get := config.RedisClient.Get(ctx, key)
 	err := get.Err()
 	if err != nil {
 		fmt.Println(err)
@@ -160,7 +154,7 @@ func (m *mysqlUserRepository) GetByID(id int64) (*models.User, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	set := cache.Set(ctx, key, string(data), expiredCache).Err()
+	set := config.RedisClient.Set(ctx, key, string(data), expiredCache).Err()
 	if set != nil {
 		log.Fatal(set)
 	}

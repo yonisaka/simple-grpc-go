@@ -9,6 +9,7 @@ import (
 
 	pb "simple-grpc-go/user/delivery/grpc/protos"
 
+	"simple-grpc-go/config"
 	userDeliveryGrpc "simple-grpc-go/user/delivery/grpc"
 	userRepo "simple-grpc-go/user/repository"
 	userUcase "simple-grpc-go/user/usecase"
@@ -47,7 +48,7 @@ func main() {
 	dsn := fmt.Sprintf("%s?%s", connection, val.Encode())
 	dbConn, err := sql.Open(dbDriver, dsn)
 	if err != nil && viper.GetBool("debug") {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	defer dbConn.Close()
 	
@@ -58,6 +59,7 @@ func main() {
 		fmt.Println("SOMETHING HAPPEN")
 	}
 
+	config.ConnectRedis()
 	server := grpc.NewServer()
 	userDeliveryGrpc.NewUserServerGrpc(server, uc)
 	fmt.Println("Server Run at ", viper.GetString("server.address"))

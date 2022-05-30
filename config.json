@@ -3,9 +3,6 @@
     "server": {
         "address": ":8081"
     },
-    "context":{
-        "timeout":2
-    },
     "database": {
         "driver": "mysql",
         "host": "host.docker.internal",
@@ -13,5 +10,9 @@
         "user": "root",
         "pass": "password",
         "name": "simple_grpc_go"
+    },
+    "redis": {
+        "host": "redis",
+        "port": ":6379"
     }
 }
