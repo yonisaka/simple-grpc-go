@@ -31,21 +31,21 @@ Change the **config.json** to run on local
     },
     "database": {
         "driver": "mysql",
-        "host": "localhost",
-        "port": "3306",
-        "user": "root",
-        "pass": "",
+        "host": "localhost", // docker "host.docker.internal"
+        "port": "3306", // docker port forward to "3307" 
+        "user": "root", 
+        "pass": "", // docker "password"
         "name": "simple_grpc_go"
     },
     "redis": {
-        "host": "localhost",
+        "host": "localhost", // docker "redis"
         "port": ":6379"
     }
 }
 ```
 
 ## Database
-Import **simple_grpc_go.sql** to your mysql.
+Import **config/simple_grpc_go.sql** to your mysql.
 
 ## Run Application
 Run Server Application :
