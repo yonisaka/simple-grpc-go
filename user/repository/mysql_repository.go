@@ -3,11 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
-	"simple-grpc-go/config"
 	models "simple-grpc-go/user"
 	"time"
 )
@@ -20,43 +17,11 @@ func NewMysqlUserRepository(Conn *sql.DB) UserRepository {
 	return &mysqlUserRepository{Conn}
 }
 
-var expiredCache = 1 * time.Minute
-
-func getCache(ctx context.Context, key string) ([]byte, error) {
-	get := config.RedisClient.Get(ctx, key)
-	err := get.Err()
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := get.Result()
-	if err != nil {
-		return nil, err
-	}
-
-	return []byte(res), nil
-}
-
 func (m *mysqlUserRepository) Fetch(cursor string, num int64) ([]*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	result := make([]*models.User, 0)
-	
-	key := "users_"+fmt.Sprintf("%d", num)+cursor
-	get, err := getCache(ctx, key)
-	if err != nil {
-		log.Println(err)
-	}
-
-	err = json.Unmarshal(get, &result)
-	if err != nil {
-		log.Println(err)
-	}
-
-	if get != nil {
-		return result, nil
-	}
 
 	query := `SELECT id,name,email,age,created_at,updated_at
 				FROM users WHERE ID > ? LIMIT ?`
@@ -84,15 +49,6 @@ func (m *mysqlUserRepository) Fetch(cursor string, num int64) ([]*models.User, e
 		result = append(result, t)
 	}
 
-	data, err := json.Marshal(result)
-	if err != nil {
-		return nil, err
-	}
-	set := config.RedisClient.Set(ctx, key, string(data), expiredCache).Err()
-	if set != nil {
-		return nil, set
-	}
-
 	return result, nil
 }
 
@@ -101,21 +57,6 @@ func (m *mysqlUserRepository) GetByID(id int64) (*models.User, error) {
 	defer cancel()
 
 	u := &models.User{}
-
-	key := "user_"+fmt.Sprintf("%d", id)
-	get, err := getCache(ctx, key)
-	if err != nil {
-		log.Println(err)
-	}
-
-	err = json.Unmarshal(get, u)
-	if err != nil {
-		log.Println(err)
-	}
-
-	if get != nil {
-		return u, nil
-	}
 	
 	query := `SELECT id, name, email, age, created_at, updated_at
 				FROM users WHERE ID = ?`
@@ -149,15 +90,6 @@ func (m *mysqlUserRepository) GetByID(id int64) (*models.User, error) {
 		u = result[0]
 	} else {
 		return nil, models.NOT_FOUND_ERROR
-	}
-
-	data, err := json.Marshal(u)
-	if err != nil {
-		log.Fatal(err)
-	}
-	set := config.RedisClient.Set(ctx, key, string(data), expiredCache).Err()
-	if set != nil {
-		log.Fatal(set)
 	}
 
 	return u, nil

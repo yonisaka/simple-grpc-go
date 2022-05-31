@@ -72,6 +72,27 @@ func TestStore(t *testing.T) {
 	assert.Equal(t, mockUser.Name, tempMockUser.Name)
 }
 
+func TestUpdate(t *testing.T) {
+	mockUserRepo := new(mocks.UserRepository)
+	var mockUser models.User
+	err := faker.FakeData(&mockUser)
+	assert.NoError(t, err)
+
+	tempMockUser := mockUser
+	tempMockUser.ID = 0
+
+	mockUserRepo.On("Update", &tempMockUser).Return(mockUser.ID, nil)
+	defer mockUserRepo.AssertExpectations(t)
+
+	u := ucase.NewUserUsecase(mockUserRepo)
+
+	a, err := u.Update(&tempMockUser)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, a)
+	assert.Equal(t, mockUser.Name, tempMockUser.Name)
+}
+
 func TestDelete(t *testing.T) {
 	mockUserRepo := new(mocks.UserRepository)
 	var mockUser models.User

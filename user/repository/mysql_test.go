@@ -49,7 +49,7 @@ func TestGetByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id","name","email","age","created_at","updated_at"}).
 		AddRow(1, "test 1", "test1@mail.com", 22, time.Now(), time.Now())
 
-	query := "SELECT id,name,email,age,created_at,updated_at FROM users WHERE ID = \\?"
+	query := "SELECT id, name, email, age, created_at, updated_at FROM users WHERE ID = \\?"
 
 	mock.ExpectQuery(query).WillReturnRows(rows)
 	u := userRepo.NewMysqlUserRepository(db)
