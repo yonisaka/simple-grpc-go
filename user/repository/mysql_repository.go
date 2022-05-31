@@ -20,7 +20,22 @@ func NewMysqlUserRepository(Conn *sql.DB) UserRepository {
 	return &mysqlUserRepository{Conn}
 }
 
-var expiredCache = 1 * time.Second
+var expiredCache = 1 * time.Minute
+
+func getCache(ctx context.Context, key string) ([]byte, error) {
+	get := config.RedisClient.Get(ctx, key)
+	err := get.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := get.Result()
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(res), nil
+}
 
 func (m *mysqlUserRepository) Fetch(cursor string, num int64) ([]*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -29,23 +44,17 @@ func (m *mysqlUserRepository) Fetch(cursor string, num int64) ([]*models.User, e
 	result := make([]*models.User, 0)
 	
 	key := "users_"+fmt.Sprintf("%d", num)+cursor
-	get := config.RedisClient.Get(ctx, key)
-	err := get.Err()
+	get, err := getCache(ctx, key)
 	if err != nil {
-		fmt.Println(err)
-	} 
-
-	cacheResult, err := get.Result()
-	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
-	err = json.Unmarshal([]byte(cacheResult), &result)
+	err = json.Unmarshal(get, &result)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
-	if cacheResult != "" {
+	if get != nil {
 		return result, nil
 	}
 
@@ -94,23 +103,17 @@ func (m *mysqlUserRepository) GetByID(id int64) (*models.User, error) {
 	u := &models.User{}
 
 	key := "user_"+fmt.Sprintf("%d", id)
-	get := config.RedisClient.Get(ctx, key)
-	err := get.Err()
+	get, err := getCache(ctx, key)
 	if err != nil {
-		fmt.Println(err)
-	} 
-
-	cacheResult, err := get.Result()
-	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
-	err = json.Unmarshal([]byte(cacheResult), u)
+	err = json.Unmarshal(get, u)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
-	
-	if cacheResult != "" {
+
+	if get != nil {
 		return u, nil
 	}
 	
