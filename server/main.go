@@ -7,8 +7,6 @@ import (
 	"net"
 	"net/url"
 
-	pb "simple-grpc-go/user/delivery/grpc/protos"
-
 	"simple-grpc-go/config"
 	userDeliveryGrpc "simple-grpc-go/user/delivery/grpc"
 	userRepo "simple-grpc-go/user/repository"
@@ -18,8 +16,6 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 )
-
-var users []*pb.User
 
 func init() {
 	viper.SetConfigFile(`config.json`)
